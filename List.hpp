@@ -1,3 +1,6 @@
+#ifndef LIST_HPP
+#define LIST_HPP
+
 #include <iostream>
 #include <iomanip>
 #include <chrono>
@@ -69,9 +72,10 @@ public:
 
     // Dodanie elementu na pozycji i-tej                                                                                                                                                                                                                                                  
 
-    void add_at(T data, int i){
+    void add_at(int i, T data){
         if(i < 0 || i > size){
             std::cout<<"ERROR: i is out of bounds!!!";
+            return;
         }
         if(i == 0){
             add_front(data);
@@ -125,6 +129,7 @@ public:
     void rm_at(int i){
         if(i < 0 || i >= size){
             std::cout<<"ERROR: i is out of bounds!!!";
+            return;
         }
         if(i == 0){
             rm_front();
@@ -141,32 +146,17 @@ public:
         size--;
     }   
 
-    // Zwracanie pozycji, na której przechowywana jest wartość data                                                                                                                                                                                                                       
+    // Zwracanie informacji czy wartość data znajduje się w liście                                                                                                                                                                                                                      
 
-    int find_node(T data){
+    bool find(T data){
         Node<T>* temp = head;
-        int index = 0;
         while (temp != nullptr){
             if(temp->data == data){
-                return index;
+                return true;
             }
             temp = temp->next;
-            index++;
         }
-        return -1; // Nie znaleziono                                                                                                                                                                                                                                                      
-    }
-
-    // Zwracanie wartości na i-tej pozycji w liście                                                                                                                                                                                                                                       
-
-    T find_at(int i){
-        if(i < 0 || i >= size){
-            std::cout<<"ERROR: i is out of bounds!!!";
-        }
-        Node<T>* temp = head;
-        for(int j = 0; j < i; j++){
-            temp = temp->next;
-        }
-        return temp->data;
+        return false; 
     }
 
     // Zwracanie ilości elementów w liście                                                                                                                                                                                                                                                
@@ -226,7 +216,7 @@ public:
 
     // Dodawanie elementu na i-tej pozycji w liście                                                                                                                                                                                                                                       
    
-    void add_at(T data, int i){
+    void add_at(int i, T data){
         if(i < 0 || i > size){
             std::cout<<"ERROR: i is out of bounds!!!";
         }
@@ -309,198 +299,24 @@ public:
         }
     }
 
-    // Zwracanie indektu na którym przechowywana jest wartość data                                                                                                                                                                                                                        
+    // Zwracanie informacji czy wartość data znajduje się w liście
 
-    int find_node(T data) const {
+    bool find(T data) {
         Double_Node<T>* temp = head;
-        int index = 0;
         while(temp != nullptr){
             if (temp->data == data){
-                return index;
+                return true;
             }
             temp = temp->next;
-            index++;
         }
-        return -1;
-    }
-
-    // Zwracanie wartości pod indeksem i-tym - wersja optymalizowana                                                                                                                                                                                                                      
-
-    T find_at(int i){
-        if(i < 0 || i >= size){
-            std::cout<<"ERROR: i is out of bounds!!!";
-        }
-        Double_Node<T>* temp;
-        if(i < (size / 2)){
-            temp = head;
-            for (int j = 0; j < i; j++){
-                temp = temp->next;
-            }
-        }
-        else{
-            temp = tail;
-            for (int j = size - 1; j > i; j--){
-                temp = temp->prev;
-            }
-        }
-        return temp->data;
+        return false;
     }
 
     // Zwracanie ilości elementów listy                                                                                                                                                                                                                                                   
 
-    int get_size(){
+    int get_size() {
         return size;
     }
 };
 
-template <typename L>
-void compare_lists(L** lists, int num_lists, int N){
-
-    // funkcja pomocnicza przygotowująca wszystkie listy do puszczania testów                                                                                                                                                                                                             
-
-    auto prepare_lists = [=](L** ls){
-        for(int i = 0; i < num_lists; ++i){
-            while(ls[i]->get_size() > 0){
-               ls[i]->rm_front();
-            }
-            for(int j = 0; j < N; ++j){
-               ls[i]->add_back(j);
-            }
-        }
-    };
-
-    std::cout << "\n\nOperacja dla " << num_lists << " list o rozmiarze N=" << N << "      Czas sumaryczny [ms]\n";
-    std::cout << std::string(75, '-') << "\n";
-
-    auto start = std::chrono::high_resolution_clock::now();
-    auto end = std::chrono::high_resolution_clock::now();
-
-    // funkce add_*                                                                                                                                                                                                                                                                       
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->add_front(181);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "1. add_front (1 el.)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->add_back(181);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "2. add_back (1 el.)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->add_at(181, N / 2);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "3. add_at (środek, 1 el.)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    // funkcja find_at                                                                                                                                                                                                                                                                    
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->find_at(0);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "4. find_at (początek)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->find_at(N / 2);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "5. find_at (środek)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->find_at(N - 1);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "6. find_at (koniec)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    // funkcja find_node (wartści znane dzięki sposobie wypełniania list w funkcji prepare_lists()                                                                                                                                                                                        
-
-    int val_start = 0;
-    int val_mid = N / 2;
-    int val_end = N - 1;
-
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->find_node(val_start);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "7. find_node (wartość z początku)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->find_node(val_mid);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "8. find_node (wartość ze środka)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->find_node(val_end);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "9. find_node (wartość z końca)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    // funkcje rm_*                                                                                                                                                                                                                                                                       
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->rm_front();
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "10. rm_front (1 el.)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->rm_back();
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "11. rm_back (1 el.)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-
-    prepare_lists(lists);
-    start = std::chrono::high_resolution_clock::now();
-    for(int i = 0; i < num_lists; ++i){
-       lists[i]->rm_at(N / 2);
-    }
-    end = std::chrono::high_resolution_clock::now();
-    std::cout << std::left << std::setw(45) << "12. rm_at (środek, 1 el.)" << std::chrono::duration<double, std::milli>(end - start).count() << " ms\n";
-}
-
-int main() {
-    const int NUM_LISTS = 50;       // Ile list w tablicy                                                                                                                                                                                                                                       
-    const int NUM_EL = 10000;       // Ile elementów na każdą listę                                                                                                                                                                                                                       
-
-    Single_Linked_List<long int>** sll_array = new Single_Linked_List<long int>*[NUM_LISTS];
-    Double_Linked_List<long int>** dll_array = new Double_Linked_List<long int>*[NUM_LISTS];
-
-    for(int i = 0; i < NUM_LISTS; ++i){
-       sll_array[i] = new Single_Linked_List<long int>();
-       dll_array[i] = new Double_Linked_List<long int>();
-    }
-
-    compare_lists(sll_array, NUM_LISTS, NUM_EL);
-    compare_lists(dll_array, NUM_LISTS, NUM_EL);
-
-    for (int i = 0; i < NUM_LISTS; ++i){
-        delete sll_array[i];
-        delete dll_array[i];
-    }
-
-    delete[] sll_array;
-    delete[] dll_array;
-
-    return 0;
-}
+#endif
